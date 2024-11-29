@@ -1,14 +1,15 @@
 import { Category } from 'src/category/entities/category.entity';
 import { AuditEntity } from 'src/shared/entities/audit.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 
-@Entity({ name: 'transaction' })
+@Entity()
 export class Transaction extends AuditEntity {
-  @Column()
+  @Column({ type: 'float' })
   value: number;
-  @ManyToOne(() => Category)
-  @JoinColumn()
+
+  @ManyToOne(() => Category, { nullable: false })
   category: Category;
+
   @Column()
   description?: string;
 }

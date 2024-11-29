@@ -6,11 +6,13 @@ import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtConfig } from 'src/shared/config/jwt.config';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly jwtConfig: JwtConfig,
   ) {}
@@ -63,6 +65,11 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const tokens = await this.authService.loginByEmail(user.email);
+
+    await this.usersService.update(tokens.user.id, {
+      name: user.name,
+      thumbURL: user.thumbURL,
+    });
     this.setCookieTokens(tokens, response);
   }
 }

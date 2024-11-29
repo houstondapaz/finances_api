@@ -6,6 +6,8 @@ const getCurrentUserByContext = (context: ExecutionContext): LoggedUser =>
 export interface LoggedUser {
   id: string;
   email?: string;
+  name?: string;
+  thumbURL?: string;
 }
 
 export const CurrentUser = createParamDecorator(

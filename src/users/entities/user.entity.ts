@@ -1,12 +1,12 @@
 import { AuditEntity } from 'src/shared/entities/audit.entity';
 import { Column, Entity } from 'typeorm';
 
-@Entity({ name: 'user' })
+@Entity()
 export class User extends AuditEntity {
   @Column()
   name: string;
   @Column({ unique: true })
   email: string;
-  @Column()
+  @Column({ nullable: true })
   thumbURL?: string;
 }

@@ -29,7 +29,7 @@ export class AuthService {
       },
     );
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, user };
   }
 
   async loginById(id: string) {
