@@ -7,10 +7,8 @@ import { Repository } from 'typeorm';
 import { CategoryService } from 'src/category/category.service';
 import { getOrder, getWhere } from 'src/shared/filterable/typeorm.helper';
 import { PaginatedResource } from 'src/shared/filterable/paginated-resource';
-import { Filtering } from 'src/shared/filterable/filter.decorator';
-import { Sorting } from 'src/shared/filterable/sorting.decorator';
-import { Pagination } from 'src/shared/filterable/pagination.decorator';
 import { LoggedUser } from 'src/shared/context';
+import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 
 @Injectable()
 export class TransactionsService {
@@ -41,19 +39,17 @@ export class TransactionsService {
   }
 
   async findAll(
-    pagination: Pagination,
-    sort?: Sorting,
-    filter?: Filtering,
+    pagination: PaginationOptions,
   ): Promise<PaginatedResource<Transaction>> {
-    const where = getWhere(filter);
-    const order = getOrder(sort);
+    const where = getWhere(pagination.filters);
+    const order = getOrder(pagination.sort);
 
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
         where,
         order,
         take: pagination.limit,
-        skip: pagination.offset,
+        skip: pagination.skip,
       },
     );
 
@@ -61,7 +57,8 @@ export class TransactionsService {
       items: transactions,
       total: total,
       page: pagination.page,
-      size: pagination.size,
+      pageSize: pagination.limit,
+      totalPages: Math.ceil(total / pagination.limit) || 1,
     };
   }
 

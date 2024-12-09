@@ -6,24 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import {
-  Pagination,
-  PaginationParams,
-} from 'src/shared/filterable/pagination.decorator';
-import {
-  Sorting,
-  SortingParams,
-} from 'src/shared/filterable/sorting.decorator';
-import {
-  Filtering,
-  FilteringParams,
-} from 'src/shared/filterable/filter.decorator';
+import { PaginateResourceInterceptor } from 'src/shared/filterable/paginated-resource.interceptor';
+import { Category } from './entities/category.entity';
+import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 
-@Controller('category')
+@Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
@@ -33,12 +26,9 @@ export class CategoryController {
   }
 
   @Get()
-  findAll(
-    @PaginationParams() paginationParams: Pagination,
-    @SortingParams(['description']) sort?: Sorting,
-    @FilteringParams(['description']) filter?: Filtering,
-  ) {
-    return this.categoryService.findAll(paginationParams, sort, filter);
+  @UseInterceptors(PaginateResourceInterceptor<Category>)
+  findAll(@Query() query: PaginationOptions) {
+    return this.categoryService.findAll(query);
   }
 
   @Get(':id')

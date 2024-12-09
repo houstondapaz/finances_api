@@ -6,10 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAlreadyExistsException } from './exceptions/user-already-exists.exception';
 import { getOrder, getWhere } from 'src/shared/filterable/typeorm.helper';
-import { Pagination } from 'src/shared/filterable/pagination.decorator';
-import { Sorting } from 'src/shared/filterable/sorting.decorator';
-import { Filtering } from 'src/shared/filterable/filter.decorator';
 import { PaginatedResource } from 'src/shared/filterable/paginated-resource';
+import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 
 @Injectable()
 export class UsersService {
@@ -39,25 +37,24 @@ export class UsersService {
   }
 
   async findAll(
-    pagination: Pagination,
-    sort?: Sorting,
-    filter?: Filtering,
+    pagination: PaginationOptions,
   ): Promise<PaginatedResource<User>> {
-    const where = getWhere(filter);
-    const order = getOrder(sort);
+    const where = getWhere(pagination.filters);
+    const order = getOrder(pagination.sort);
 
     const [users, total] = await this.usersRepository.findAndCount({
       where,
       order,
       take: pagination.limit,
-      skip: pagination.offset,
+      skip: pagination.skip,
     });
 
     return {
       items: users,
       total: total,
       page: pagination.page,
-      size: pagination.size,
+      pageSize: pagination.limit,
+      totalPages: Math.ceil(total / pagination.limit) || 1,
     };
   }
 

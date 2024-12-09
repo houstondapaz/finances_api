@@ -2,14 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
-import { Sorting } from 'src/shared/filterable/sorting.decorator';
-import { Filtering } from 'src/shared/filterable/filter.decorator';
-import { Pagination } from 'src/shared/filterable/pagination.decorator';
 import { getOrder, getWhere } from 'src/shared/filterable/typeorm.helper';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginatedResource } from 'src/shared/filterable/paginated-resource';
 import { CategoryAlreadyExistsException } from './exceptions/category-already-exists.exception';
+import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 
 @Injectable()
 export class CategoryService {
@@ -38,25 +36,24 @@ export class CategoryService {
   }
 
   async findAll(
-    pagination: Pagination,
-    sort?: Sorting,
-    filter?: Filtering,
+    pagination: PaginationOptions,
   ): Promise<PaginatedResource<Category>> {
-    const where = getWhere(filter);
-    const order = getOrder(sort);
+    const where = getWhere(pagination.filters);
+    const order = getOrder(pagination.sort);
 
     const [categories, total] = await this.categoriesRepository.findAndCount({
       where,
       order,
       take: pagination.limit,
-      skip: pagination.offset,
+      skip: pagination.skip,
     });
 
     return {
       items: categories,
       total: total,
       page: pagination.page,
-      size: pagination.size,
+      pageSize: pagination.limit,
+      totalPages: Math.ceil(total / pagination.limit) || 1,
     };
   }
 

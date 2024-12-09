@@ -6,22 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {
-  Pagination,
-  PaginationParams,
-} from 'src/shared/filterable/pagination.decorator';
-import {
-  Sorting,
-  SortingParams,
-} from 'src/shared/filterable/sorting.decorator';
-import {
-  Filtering,
-  FilteringParams,
-} from 'src/shared/filterable/filter.decorator';
+import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 
 @Controller('users')
 export class UsersController {
@@ -33,12 +23,8 @@ export class UsersController {
   }
 
   @Get()
-  findAll(
-    @PaginationParams() paginationParams: Pagination,
-    @SortingParams(['description']) sort?: Sorting,
-    @FilteringParams(['description']) filter?: Filtering,
-  ) {
-    return this.usersService.findAll(paginationParams, sort, filter);
+  findAll(@Query() query: PaginationOptions) {
+    return this.usersService.findAll(query);
   }
 
   @Get(':id')

@@ -7,38 +7,82 @@ import {
   MoreThanOrEqual,
   ILike,
   In,
+  FindOptionsWhere,
 } from 'typeorm';
 
-import { Filtering, FilterRule } from 'src/shared/filterable/filter.decorator';
-import { Sorting } from 'src/shared/filterable/sorting.decorator';
+import { QueryFilter, FilterOperator, Sorting } from './pagination-options';
 
 export const getOrder = (sort: Sorting) =>
   sort ? { [sort.property]: sort.direction } : {};
 
-export const getWhere = (filter: Filtering) => {
-  if (!filter) return {};
+export function getWhere<T>(filters: QueryFilter[]): FindOptionsWhere<T> {
+  if (!filters?.length) return {};
 
-  if (filter.rule == FilterRule.IS_NULL) return { [filter.property]: IsNull() };
-  if (filter.rule == FilterRule.IS_NOT_NULL)
-    return { [filter.property]: Not(IsNull()) };
-  if (filter.rule == FilterRule.EQUALS)
-    return { [filter.property]: filter.value };
-  if (filter.rule == FilterRule.NOT_EQUALS)
-    return { [filter.property]: Not(filter.value) };
-  if (filter.rule == FilterRule.GREATER_THAN)
-    return { [filter.property]: MoreThan(filter.value) };
-  if (filter.rule == FilterRule.GREATER_THAN_OR_EQUALS)
-    return { [filter.property]: MoreThanOrEqual(filter.value) };
-  if (filter.rule == FilterRule.LESS_THAN)
-    return { [filter.property]: LessThan(filter.value) };
-  if (filter.rule == FilterRule.LESS_THAN_OR_EQUALS)
-    return { [filter.property]: LessThanOrEqual(filter.value) };
-  if (filter.rule == FilterRule.LIKE)
-    return { [filter.property]: ILike(`%${filter.value}%`) };
-  if (filter.rule == FilterRule.NOT_LIKE)
-    return { [filter.property]: Not(ILike(`%${filter.value}%`)) };
-  if (filter.rule == FilterRule.IN)
-    return { [filter.property]: In(filter.value.split(',')) };
-  if (filter.rule == FilterRule.NOT_IN)
-    return { [filter.property]: Not(In(filter.value.split(','))) };
-};
+  return filters.reduce<FindOptionsWhere<T>>(
+    (where: FindOptionsWhere<T>, filter: QueryFilter) => {
+      if (filter.operator == FilterOperator.IS_NULL)
+        return {
+          ...where,
+          [filter.property]: IsNull(),
+        };
+      if (filter.operator == FilterOperator.IS_NOT_NULL)
+        return {
+          ...where,
+          [filter.property]: Not(IsNull()),
+        };
+      if (filter.operator == FilterOperator.EQUALS)
+        return {
+          ...where,
+          [filter.property]: filter.value,
+        };
+      if (filter.operator == FilterOperator.NOT_EQUALS)
+        return {
+          ...where,
+          [filter.property]: Not(filter.value),
+        };
+      if (filter.operator == FilterOperator.GREATER_THAN)
+        return {
+          ...where,
+          [filter.property]: MoreThan(filter.value),
+        };
+      if (filter.operator == FilterOperator.GREATER_THAN_OR_EQUALS)
+        return {
+          ...where,
+          [filter.property]: MoreThanOrEqual(filter.value),
+        };
+      if (filter.operator == FilterOperator.LESS_THAN)
+        return {
+          ...where,
+          [filter.property]: LessThan(filter.value),
+        };
+      if (filter.operator == FilterOperator.LESS_THAN_OR_EQUALS)
+        return {
+          ...where,
+          [filter.property]: LessThanOrEqual(filter.value),
+        };
+      if (filter.operator == FilterOperator.LIKE)
+        return {
+          ...where,
+          [filter.property]: ILike(`%${filter.value}%`),
+        };
+      if (filter.operator == FilterOperator.NOT_LIKE)
+        return {
+          ...where,
+          [filter.property]: Not(ILike(`%${filter.value}%`)),
+        };
+      if (filter.operator == FilterOperator.IN)
+        return {
+          ...where,
+          [filter.property]: In(filter.value.split(',')),
+        };
+      if (filter.operator == FilterOperator.NOT_IN)
+        return {
+          ...where,
+          [filter.property]: Not(In(filter.value.split(','))),
+        };
+
+      return where;
+    },
+    {},
+  );
+}

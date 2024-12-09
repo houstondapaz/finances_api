@@ -6,23 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import {
-  Pagination,
-  PaginationParams,
-} from 'src/shared/filterable/pagination.decorator';
-import {
-  Sorting,
-  SortingParams,
-} from 'src/shared/filterable/sorting.decorator';
-import {
-  Filtering,
-  FilteringParams,
-} from 'src/shared/filterable/filter.decorator';
 import { CurrentUser, LoggedUser } from 'src/shared/context';
+import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -38,12 +28,8 @@ export class TransactionsController {
   }
 
   @Get()
-  findAll(
-    @PaginationParams() paginationParams: Pagination,
-    @SortingParams(['value']) sort?: Sorting,
-    @FilteringParams(['description']) filter?: Filtering,
-  ) {
-    return this.transactionsService.findAll(paginationParams, sort, filter);
+  findAll(@Query() query: PaginationOptions) {
+    return this.transactionsService.findAll(query);
   }
 
   @Get(':id')
