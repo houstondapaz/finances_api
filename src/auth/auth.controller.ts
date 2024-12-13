@@ -4,16 +4,17 @@ import { CurrentUser, LoggedUser } from 'src/shared/context';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
-import { ConfigService } from '@nestjs/config';
+import { AppConfig } from 'src/shared/config/app.config';
 import { JwtConfig } from 'src/shared/config/jwt.config';
 import { UsersService } from 'src/users/users.service';
+import { JwtGuard } from './guards/jwt.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
-    private readonly configService: ConfigService,
+    private readonly appConfig: AppConfig,
     private readonly jwtConfig: JwtConfig,
   ) {}
 
@@ -30,14 +31,14 @@ export class AuthController {
         Number.parseInt(this.jwtConfig.refreshExpirationSeconds) * 1000,
     );
 
-    const secure = this.configService.get('NODE_ENV') === 'production';
-    response.cookie('Authentication', tokens.accessToken, {
+    const secure = this.appConfig.isProduction;
+    response.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure,
       expires: expiresAccessToken,
     });
 
-    response.cookie('Refresh', tokens.refreshToken, {
+    response.cookie('refresh_token', tokens.refreshToken, {
       httpOnly: true,
       secure,
       expires: expiresRefreshToken,
@@ -52,6 +53,12 @@ export class AuthController {
   ) {
     const tokens = await this.authService.loginById(user.id);
     this.setCookieTokens(tokens, response);
+  }
+
+  @Get('user')
+  @UseGuards(JwtGuard)
+  async getAuthUser(@CurrentUser() user: LoggedUser) {
+    return user;
   }
 
   @Get('google')
@@ -71,5 +78,7 @@ export class AuthController {
       thumbURL: user.thumbURL,
     });
     this.setCookieTokens(tokens, response);
+
+    response.redirect(this.appConfig.clientHost);
   }
 }

@@ -7,11 +7,14 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationOptions } from 'src/shared/filterable/pagination-options';
+import { User } from './entities/user.entity';
+import { PaginateResourceInterceptor } from 'src/shared/filterable/paginated-resource.interceptor';
 
 @Controller('users')
 export class UsersController {
@@ -23,6 +26,7 @@ export class UsersController {
   }
 
   @Get()
+  @UseInterceptors(PaginateResourceInterceptor<User>)
   findAll(@Query() query: PaginationOptions) {
     return this.usersService.findAll(query);
   }

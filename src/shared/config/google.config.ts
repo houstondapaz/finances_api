@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AppConfig } from './app.config';
 
 @Injectable()
 export class GoogleConfig {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly appService: AppConfig,
+  ) {}
 
   get clientId() {
     return this.configService.getOrThrow('GOOGLE_CLIENT_ID');
@@ -14,6 +18,6 @@ export class GoogleConfig {
   }
 
   get callBackURL() {
-    return `${this.configService.getOrThrow('HOST')}/auth/google/callback`;
+    return `${this.appService.host}/auth/google/callback`;
   }
 }

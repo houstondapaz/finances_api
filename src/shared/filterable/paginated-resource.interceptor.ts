@@ -18,11 +18,11 @@ export class PaginateResourceInterceptor<T> implements NestInterceptor {
       .handle()
       .pipe(
         tap((data) => {
-          if (data && (data.total || data.page || data.size)) {
+          if (data && (data.total || data.totalPages || data.page)) {
             const response = context.switchToHttp().getResponse();
             response.header('X-Total', data.total?.toString());
             response.header('X-Pages', data.totalPages);
-            response.header('X-Page', data.page);
+            response.header('X-Page', data.page || 1);
           }
           delete data.totalPages;
           delete data.page;

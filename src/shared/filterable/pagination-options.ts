@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsPositive,
@@ -46,9 +46,11 @@ export class QueryFilter {
   @IsString()
   @IsNotEmpty()
   property: string;
+
   @IsEnum(FilterOperator)
   @IsNotEmpty()
   operator: FilterOperator;
+
   @IsOptional()
   @IsAlphanumeric()
   value?: string;
@@ -56,20 +58,26 @@ export class QueryFilter {
 
 export class PaginationOptions {
   @Type(() => Number)
+  @Transform((p) => {
+    return p.value || 1;
+  })
   @IsOptional()
   @IsPositive()
   @IsInt()
-  page: number;
+  page: number = 1;
+
   @Type(() => Number)
   @IsOptional()
   @IsPositive()
   @IsInt()
-  limit: number;
+  limit: number = 50;
+
   @Type(() => QueryFilter)
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   filters?: QueryFilter[];
+
   @IsOptional()
   sort?: Sorting;
 

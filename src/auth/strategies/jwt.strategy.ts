@@ -9,7 +9,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     const extractJwtFromCookie = (req) => {
       let token = null;
       if (req && req.cookies) {
-        token = req.cookies['Authentication'];
+        token = req.cookies['access_token'];
       }
       return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     };
@@ -21,9 +21,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: { sub: string; email: string }) {
+  async validate(payload: {
+    id: string;
+    thumbURL?: string;
+    sub?: string;
+    email: string;
+  }) {
     return {
-      id: payload.sub,
+      id: payload.sub || payload.id,
+      thumbURL: payload.thumbURL,
       email: payload.email,
     };
   }

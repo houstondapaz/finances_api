@@ -21,6 +21,7 @@ import { SharedModule } from './shared/shared.module';
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_SECRET: Joi.string().required(),
         HOST: Joi.string().default('http://localhost:3000'),
+        CLIENT_HOST: Joi.string().default('http://localhost:5173'),
       }),
     }),
     SharedModule,

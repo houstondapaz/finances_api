@@ -22,11 +22,18 @@ export const EXPOSE_HEADERS = [
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.disable('x-powered-by');
   app.use(cookieParser());
   app.enableCors({
+    origin: true,
+    credentials: true,
     exposedHeaders: EXPOSE_HEADERS.concat(
       EXPOSE_HEADERS.map((headerName) => headerName.toLowerCase()),
     ).join(','),

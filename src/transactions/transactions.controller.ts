@@ -7,13 +7,19 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CurrentUser, LoggedUser } from 'src/shared/context';
 import { PaginationOptions } from 'src/shared/filterable/pagination-options';
+import { Transaction } from './entities/transaction.entity';
+import { PaginateResourceInterceptor } from 'src/shared/filterable/paginated-resource.interceptor';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
@@ -28,6 +34,7 @@ export class TransactionsController {
   }
 
   @Get()
+  @UseInterceptors(PaginateResourceInterceptor<Transaction>)
   findAll(@Query() query: PaginationOptions) {
     return this.transactionsService.findAll(query);
   }
