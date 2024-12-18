@@ -13,9 +13,9 @@ export class CreateTransactionDto {
   @IsPositive()
   @IsNumber()
   value: number;
-  @Type(() => Date)
+  @Type(() => String)
   @IsDateString()
-  date: Date;
+  date: string;
   @Type(() => String)
   @IsString()
   @IsOptional()

@@ -7,6 +7,9 @@ export class Transaction extends AuditEntity {
   @Column({ type: 'float' })
   value: number;
 
+  @Column({ type: 'date' })
+  date: Date;
+
   @ManyToOne(() => Category, { nullable: false })
   category: Category;
 

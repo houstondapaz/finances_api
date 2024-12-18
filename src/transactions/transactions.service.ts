@@ -28,6 +28,7 @@ export class TransactionsService {
 
     const entity = this.transactionRepository.create({
       category,
+      date: createTransactionDto.date,
       createdById: loggedUser.id,
       value: createTransactionDto.value,
       description: createTransactionDto.description,
@@ -47,6 +48,7 @@ export class TransactionsService {
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
         where,
+        relations: ['category'],
         order,
         take: pagination.limit,
         skip: pagination.skip,
@@ -83,6 +85,10 @@ export class TransactionsService {
       );
 
       transaction.category = category;
+    }
+
+    if (updateTransactionDto.date) {
+      transaction.date = new Date(updateTransactionDto.date);
     }
 
     await this.transactionRepository.update(

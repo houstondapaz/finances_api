@@ -13,6 +13,6 @@ export const baseDatabaseConfig = {
   migrationsRun: false,
   synchronize: true,
   entities: [entitiesPath],
-  logging: process.env.NODE_ENV === 'development' ? ['query', 'error'] : false,
+  logging: ['query', 'error'],
   namingStrategy: new SnakeNamingStrategy(),
 };

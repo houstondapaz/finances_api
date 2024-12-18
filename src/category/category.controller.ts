@@ -8,6 +8,7 @@ import {
   Delete,
   UseInterceptors,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -15,7 +16,9 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PaginateResourceInterceptor } from 'src/shared/filterable/paginated-resource.interceptor';
 import { Category } from './entities/category.entity';
 import { PaginationOptions } from 'src/shared/filterable/pagination-options';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

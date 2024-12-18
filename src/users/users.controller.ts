@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,7 +16,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 import { User } from './entities/user.entity';
 import { PaginateResourceInterceptor } from 'src/shared/filterable/paginated-resource.interceptor';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
