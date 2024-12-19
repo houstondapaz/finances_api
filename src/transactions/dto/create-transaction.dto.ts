@@ -6,6 +6,7 @@ import {
   IsDateString,
   IsUUID,
   IsNumber,
+  IsInt,
 } from 'class-validator';
 
 export class CreateTransactionDto {
@@ -23,4 +24,8 @@ export class CreateTransactionDto {
   @IsUUID()
   @Type(() => String)
   categoryId: string;
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  installments?: number;
 }

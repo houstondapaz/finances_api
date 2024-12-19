@@ -15,4 +15,13 @@ export class Transaction extends AuditEntity {
 
   @Column()
   description?: string;
+
+  @Column({ default: 1 })
+  installment: number;
+
+  @Column({ default: 1 })
+  totalInstallments: number;
+
+  @Column({ type: 'uuid' })
+  installmentsCode: string;
 }

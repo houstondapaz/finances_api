@@ -6,13 +6,13 @@ import {
   IsInt,
   IsNotEmpty,
   IsEnum,
-  IsAlphanumeric,
   IsArray,
   ValidateNested,
 } from 'class-validator';
 
 export enum FilterOperator {
   EQUALS = 'eq',
+  BETWEEN = 'between',
   NOT_EQUALS = 'neq',
   GREATER_THAN = 'gt',
   GREATER_THAN_OR_EQUALS = 'gte',
@@ -52,7 +52,6 @@ export class QueryFilter {
   operator: FilterOperator;
 
   @IsOptional()
-  @IsAlphanumeric()
   value?: string;
 }
 

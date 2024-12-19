@@ -16,4 +16,8 @@ export class AppConfig {
   get isProduction() {
     return this.configService.get('NODE_ENV') === 'production';
   }
+
+  get defaultBudgetValue() {
+    return Number.parseFloat(this.configService.get('DEFAULT_MONTHLY_BUDGET'));
+  }
 }

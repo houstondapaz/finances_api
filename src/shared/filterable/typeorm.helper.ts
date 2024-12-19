@@ -8,6 +8,7 @@ import {
   ILike,
   In,
   FindOptionsWhere,
+  Between,
 } from 'typeorm';
 
 import { QueryFilter, FilterOperator, Sorting } from './pagination-options';
@@ -80,6 +81,14 @@ export function getWhere<T>(filters: QueryFilter[]): FindOptionsWhere<T> {
           ...where,
           [filter.property]: Not(In(filter.value.split(','))),
         };
+
+      if (filter.operator == FilterOperator.BETWEEN) {
+        const [first, second] = filter.value.split('|');
+        return {
+          ...where,
+          [filter.property]: Between(first, second),
+        };
+      }
 
       return where;
     },

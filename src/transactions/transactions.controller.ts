@@ -39,6 +39,14 @@ export class TransactionsController {
     return this.transactionsService.findAll(query);
   }
 
+  @Get('budget')
+  budget(
+    @CurrentUser()
+    loggedUser: LoggedUser,
+  ) {
+    return this.transactionsService.getExpensesAndBudget(loggedUser);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.transactionsService.findOne(id);

@@ -8,7 +8,13 @@ import { CategoryService } from 'src/category/category.service';
 import { getOrder, getWhere } from 'src/shared/filterable/typeorm.helper';
 import { PaginatedResource } from 'src/shared/filterable/paginated-resource';
 import { LoggedUser } from 'src/shared/context';
-import { PaginationOptions } from 'src/shared/filterable/pagination-options';
+import {
+  FilterOperator,
+  PaginationOptions,
+} from 'src/shared/filterable/pagination-options';
+import { BudgetsService } from './budget.service';
+import * as dayjs from 'dayjs';
+import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class TransactionsService {
@@ -16,7 +22,26 @@ export class TransactionsService {
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
     private readonly categoryService: CategoryService,
+    private readonly budgetsService: BudgetsService,
   ) {}
+
+  async getExpensesAndBudget(loggedUser: LoggedUser) {
+    const queryBuilder = this.transactionRepository.createQueryBuilder();
+    const response = await queryBuilder
+      .select(`DATE_TRUNC('month',"date")`, 'month')
+      .addSelect('SUM("value")', 'value')
+      .addGroupBy('month')
+      .where(`DATE_TRUNC('month', "date") = DATE_TRUNC('month', NOW())`)
+      .execute();
+
+    const spent = response[0]?.value as number;
+    const budget = await this.budgetsService.getOrCreateBudget(loggedUser);
+
+    return {
+      spent,
+      budget: budget.value,
+    };
+  }
 
   async create(
     createTransactionDto: CreateTransactionDto,
@@ -26,17 +51,39 @@ export class TransactionsService {
       createTransactionDto.categoryId,
     );
 
-    const entity = this.transactionRepository.create({
-      category,
-      date: createTransactionDto.date,
-      createdById: loggedUser.id,
-      value: createTransactionDto.value,
-      description: createTransactionDto.description,
-    });
+    const installmentsValue =
+      createTransactionDto.value / createTransactionDto.installments;
+    const entities = [];
 
-    await this.transactionRepository.save(entity);
+    const installmentsCode = randomUUID();
 
-    return entity;
+    for (
+      let installment = 1;
+      installment <= createTransactionDto.installments;
+      installment++
+    ) {
+      entities.push(
+        this.transactionRepository.create({
+          category,
+          date: dayjs(createTransactionDto.date)
+            .add(installment - 1, 'M')
+            .toDate(),
+          createdById: loggedUser.id,
+          value: installmentsValue,
+          installment,
+          totalInstallments: createTransactionDto.installments,
+          installmentsCode,
+          description:
+            createTransactionDto.installments === 1
+              ? createTransactionDto.description
+              : `${createTransactionDto.description} (${installment}/${createTransactionDto.installments})`,
+        }),
+      );
+    }
+
+    await this.transactionRepository.insert(entities);
+
+    return entities;
   }
 
   async findAll(
@@ -99,7 +146,25 @@ export class TransactionsService {
     );
   }
 
-  remove(id: string) {
-    return this.transactionRepository.softDelete(id);
+  async remove(id: string) {
+    const transaction = await this.findOne(id);
+    const installments = await this.findAll({
+      filters: [
+        {
+          operator: FilterOperator.EQUALS,
+          property: 'installmentsCode',
+          value: transaction.installmentsCode,
+        },
+      ],
+      limit: 100,
+      page: 1,
+      skip: 0,
+    });
+
+    await Promise.all(
+      installments.items.map((i) =>
+        this.transactionRepository.softDelete(i.id),
+      ),
+    );
   }
 }
