@@ -12,7 +12,7 @@ import { SharedModule } from './shared/shared.module';
   imports: [
     ConfigModule.forRoot({
       validationSchema: Joi.object({
-        DATABASE_CONNECTION_STRING: Joi.string().uri().required(),
+        DATABASE_URL: Joi.string().uri().required(),
         RUN_MIGRATIONS: Joi.bool().default(true).optional(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION_SECONDS: Joi.number().positive().required(),

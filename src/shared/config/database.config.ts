@@ -6,6 +6,6 @@ export class DatabaseConfig {
   constructor(private readonly configService: ConfigService) {}
 
   get connectionString() {
-    return this.configService.getOrThrow('DATABASE_CONNECTION_STRING');
+    return this.configService.getOrThrow('DATABASE_URL');
   }
 }
