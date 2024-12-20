@@ -17,6 +17,7 @@ import { PaginateResourceInterceptor } from 'src/shared/filterable/paginated-res
 import { Category } from './entities/category.entity';
 import { PaginationOptions } from 'src/shared/filterable/pagination-options';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { CurrentUser, LoggedUser } from 'src/shared/context';
 
 @UseGuards(JwtGuard)
 @Controller('categories')
@@ -24,8 +25,12 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoryService.create(createCategoryDto);
+  create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @CurrentUser()
+    loggedUser: LoggedUser,
+  ) {
+    return this.categoryService.create(createCategoryDto, loggedUser);
   }
 
   @Get()
@@ -43,12 +48,18 @@ export class CategoryController {
   update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
+    @CurrentUser()
+    loggedUser: LoggedUser,
   ) {
-    return this.categoryService.update(id, updateCategoryDto);
+    return this.categoryService.update(id, updateCategoryDto, loggedUser);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoryService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @CurrentUser()
+    loggedUser: LoggedUser,
+  ) {
+    return this.categoryService.remove(id, loggedUser);
   }
 }

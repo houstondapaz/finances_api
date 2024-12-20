@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { PaginatedResource } from 'src/shared/filterable/paginated-resource';
 import { CategoryAlreadyExistsException } from './exceptions/category-already-exists.exception';
 import { PaginationOptions } from 'src/shared/filterable/pagination-options';
+import { LoggedUser } from 'src/shared/context';
 
 @Injectable()
 export class CategoryService {
@@ -16,7 +17,7 @@ export class CategoryService {
     private readonly categoriesRepository: Repository<Category>,
   ) {}
 
-  async create(createCategoryDto: CreateCategoryDto) {
+  async create(createCategoryDto: CreateCategoryDto, loggedUser: LoggedUser) {
     if (
       await this.categoriesRepository.existsBy({
         name: createCategoryDto.name,
@@ -28,6 +29,7 @@ export class CategoryService {
     const entity = this.categoriesRepository.create({
       name: createCategoryDto.name,
       icon: createCategoryDto.icon,
+      createdById: loggedUser.id,
     });
 
     await this.categoriesRepository.save(entity);
@@ -61,7 +63,11 @@ export class CategoryService {
     return this.categoriesRepository.findOne({ where: { id } });
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+    loggedUser: LoggedUser,
+  ) {
     const category = await this.findOne(id);
 
     if (updateCategoryDto.name) {
@@ -72,6 +78,8 @@ export class CategoryService {
       category.icon = updateCategoryDto.icon;
     }
 
+    category.updatedById = loggedUser.id;
+
     await this.categoriesRepository.update(
       {
         id,
@@ -80,7 +88,10 @@ export class CategoryService {
     );
   }
 
-  remove(id: string) {
-    return this.categoriesRepository.softDelete(id);
+  remove(id: string, loggedUser: LoggedUser) {
+    this.categoriesRepository.manager.transaction(async (em) => {
+      await em.update<Category>(Category, { id }, { deletedBy: loggedUser.id });
+      return em.softDelete<Category>(Category, { id });
+    });
   }
 }

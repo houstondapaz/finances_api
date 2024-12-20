@@ -56,12 +56,22 @@ export class TransactionsController {
   update(
     @Param('id') id: string,
     @Body() updateTransactionDto: UpdateTransactionDto,
+    @CurrentUser()
+    loggedUser: LoggedUser,
   ) {
-    return this.transactionsService.update(id, updateTransactionDto);
+    return this.transactionsService.update(
+      id,
+      updateTransactionDto,
+      loggedUser,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.transactionsService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @CurrentUser()
+    loggedUser: LoggedUser,
+  ) {
+    return this.transactionsService.remove(id, loggedUser);
   }
 }

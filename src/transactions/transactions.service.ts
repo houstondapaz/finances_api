@@ -115,7 +115,11 @@ export class TransactionsService {
     return this.transactionRepository.findOne({ where: { id } });
   }
 
-  async update(id: string, updateTransactionDto: UpdateTransactionDto) {
+  async update(
+    id: string,
+    updateTransactionDto: UpdateTransactionDto,
+    loggedUser: LoggedUser,
+  ) {
     const transaction = await this.findOne(id);
 
     if (updateTransactionDto.value) {
@@ -138,6 +142,8 @@ export class TransactionsService {
       transaction.date = new Date(updateTransactionDto.date);
     }
 
+    transaction.createdById = loggedUser.id;
+
     await this.transactionRepository.update(
       {
         id,
@@ -146,7 +152,7 @@ export class TransactionsService {
     );
   }
 
-  async remove(id: string) {
+  async remove(id: string, loggedUser: LoggedUser) {
     const transaction = await this.findOne(id);
     const installments = await this.findAll({
       filters: [
@@ -163,7 +169,14 @@ export class TransactionsService {
 
     await Promise.all(
       installments.items.map((i) =>
-        this.transactionRepository.softDelete(i.id),
+        this.transactionRepository.manager.transaction(async (em) => {
+          await em.update<Transaction>(
+            Transaction,
+            { id: i.id },
+            { deletedBy: loggedUser.id },
+          );
+          return em.softDelete<Transaction>(Transaction, { id: i.id });
+        }),
       ),
     );
   }
