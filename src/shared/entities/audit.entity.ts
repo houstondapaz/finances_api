@@ -8,14 +8,16 @@ import {
 export class AuditEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column()
-  createdById: string;
+  @Column({ nullable: true })
+  createdById?: string;
   @CreateDateColumn()
   createdAt: Date;
-  @Column()
-  updatedById: string;
+  @Column({ nullable: true })
+  updatedById?: string;
   @UpdateDateColumn()
   updatedAt: Date;
+  @Column({ nullable: true })
+  deletedBy?: string;
   @DeleteDateColumn()
   deletedAt: Date;
 }
